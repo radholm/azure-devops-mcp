@@ -1,0 +1,24 @@
+{
+  "inputs": [
+    {
+      "id": "ado_org",
+      "type": "promptString",
+      "description": "Azure DevOps organization name  (e.g. 'contoso')"
+    },
+    {
+      "id": "ado_base_url",
+      "type": "promptString",
+      "description": "Base URL for Azure DevOps Server (leave empty for cloud). E.g. 'https://azuredo.example.com/tfs/MyCollection'"
+    }
+  ],
+  "servers": {
+    "ado": {
+      "type": "stdio",
+      "command": "mcp-server-azuredevops",
+      "args": ["${input:ado_org}", "--base-url", "${input:ado_base_url}"],
+      "env": {
+        "LOG_LEVEL": "debug"
+      }
+    }
+  }
+}

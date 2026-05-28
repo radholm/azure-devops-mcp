@@ -250,12 +250,7 @@ Use the `--base-url` (or `-b`) option to point to your on-prem server, or set th
     "ado-onprem": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y", "@azure-devops/mcp",
-        "${input:ado_org}",
-        "--base-url", "https://azuredo.example.com/tfs/MyCollection",
-        "--authentication", "pat"
-      ],
+      "args": ["-y", "@azure-devops/mcp", "${input:ado_org}", "--base-url", "https://azuredo.example.com/tfs/MyCollection", "--authentication", "pat"],
       "env": {
         "PERSONAL_ACCESS_TOKEN": "<base64 encoded email:pat>"
       }
@@ -291,7 +286,7 @@ If your on-prem server uses self-signed SSL certificates, you may need to set th
 Azure DevOps Server on-premises may not support the latest API versions used by the cloud service. If you encounter `404` or version-related errors, set the `AZURE_DEVOPS_API_VERSION` environment variable to match your server version:
 
 | Azure DevOps Server Version | Supported API Version |
-|-----------------------------|-----------------------|
+| --------------------------- | --------------------- |
 | Azure DevOps Server 2022    | `7.1`                 |
 | Azure DevOps Server 2020    | `6.0`                 |
 | Azure DevOps Server 2019    | `5.1`                 |

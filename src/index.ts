@@ -106,10 +106,7 @@ async function main() {
   // Validate authentication type for on-prem servers
   if (isOnPrem && argv.authentication !== "pat" && argv.authentication !== "envvar") {
     logger.error("On-premises Azure DevOps Server only supports 'pat' or 'envvar' authentication.");
-    throw new Error(
-      "On-premises Azure DevOps Server only supports 'pat' or 'envvar' authentication. " +
-      "Please use '--authentication pat' or '--authentication envvar'."
-    );
+    throw new Error("On-premises Azure DevOps Server only supports 'pat' or 'envvar' authentication. " + "Please use '--authentication pat' or '--authentication envvar'.");
   }
 
   const server = new McpServer({

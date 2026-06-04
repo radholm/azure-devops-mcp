@@ -1,6 +1,6 @@
 {
   "name": "@radholm/azure-devops-mcp",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "MCP server for interacting with Azure DevOps",
   "license": "MIT",
   "author": "Fredrik Radholm",
@@ -12,7 +12,7 @@
   },
   "type": "module",
   "bin": {
-    "mcp-server-azuredevops": "dist/index.js"
+    "azure-devops-mcp": "dist/index.js"
   },
   "files": [
     "dist"

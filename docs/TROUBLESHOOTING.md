@@ -16,7 +16,7 @@ Example
   "servers": {
     "ado": {
       "type": "stdio",
-      "command": "mcp-server-azuredevops",
+      "command": "azure-devops-mcp",
       "args": ["${input:ado_org}"],
       "env": {
         "LOG_LEVEL": "debug"
@@ -304,7 +304,7 @@ The MCP server may be authenticating with a different tenant than your Azure Dev
      "servers": {
        "ado": {
          "type": "stdio",
-         "command": "mcp-server-azuredevops",
+         "command": "azure-devops-mcp",
          "args": ["${input:ado_org}", "--tenant", "${input:ado_tenant}"]
        }
      }

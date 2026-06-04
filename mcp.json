@@ -14,7 +14,7 @@
   "servers": {
     "ado": {
       "type": "stdio",
-      "command": "mcp-server-azuredevops",
+      "command": "azure-devops-mcp",
       "args": ["${input:ado_org}", "--base-url", "${input:ado_base_url}"],
       "env": {
         "LOG_LEVEL": "debug"

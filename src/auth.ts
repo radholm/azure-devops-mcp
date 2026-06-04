@@ -82,14 +82,14 @@ function createAuthenticator(type: string, tenantId?: string): () => Promise<str
       logger.debug(`Authenticator: Using PAT authentication (PERSONAL_ACCESS_TOKEN)`);
       return async () => {
         logger.debug(`${type}: Reading token from PERSONAL_ACCESS_TOKEN environment variable`);
-        const b64Pat = process.env["PERSONAL_ACCESS_TOKEN"];
-        if (!b64Pat) {
+        const pat = process.env["PERSONAL_ACCESS_TOKEN"];
+        if (!pat) {
           logger.error(`${type}: PERSONAL_ACCESS_TOKEN environment variable is not set or empty`);
-          throw new Error("Environment variable 'PERSONAL_ACCESS_TOKEN' is not set or empty. Please set it with a valid base64-encoded Azure DevOps Personal Access Token.");
+          throw new Error("Environment variable 'PERSONAL_ACCESS_TOKEN' is not set or empty. Please set it with a valid Azure DevOps Personal Access Token.");
         }
-        // Return base64 value as-is — caller uses it directly as the Basic auth credential
+        // Return the raw PAT value as-is. The caller handles encoding for Basic auth.
         logger.debug(`${type}: Successfully retrieved PAT from environment variable`);
-        return b64Pat;
+        return pat;
       };
 
     case "envvar":

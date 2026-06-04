@@ -24,16 +24,29 @@ function isGitHubCodespaceEnv(): boolean {
 
 const defaultAuthenticationType = isGitHubCodespaceEnv() ? "azcli" : "interactive";
 
+/**
+ * Extract the organization/collection name from a base URL.
+ * E.g. "https://azuredo.lfnet.se/tfs/Lansforsakringar" -> "Lansforsakringar"
+ *      "https://dev.azure.com/MyOrg" -> "MyOrg"
+ */
+function extractOrgFromUrl(url: string): string {
+  const pathname = new URL(url).pathname.replace(/\/+$/, "");
+  const lastSegment = pathname.split("/").pop();
+  if (!lastSegment) {
+    throw new Error(`Cannot derive organization name from base URL '${url}'. Please provide the organization positional argument.`);
+  }
+  return lastSegment;
+}
+
 // Parse command line arguments using yargs
 const argv = yargs(hideBin(process.argv))
-  .scriptName("mcp-server-azuredevops")
-  .usage("Usage: $0 <organization> [options]")
+  .scriptName("azure-devops-mcp")
+  .usage("Usage: $0 [organization] [options]")
   .version(packageVersion)
-  .command("$0 <organization> [options]", "Azure DevOps MCP Server", (yargs) => {
+  .command("$0 [organization] [options]", "Azure DevOps MCP Server", (yargs) => {
     yargs.positional("organization", {
-      describe: "Azure DevOps organization name",
+      describe: "Azure DevOps organization name (optional if --base-url is provided)",
       type: "string",
-      demandOption: true,
     });
   })
   .option("domains", {
@@ -60,11 +73,17 @@ const argv = yargs(hideBin(process.argv))
     describe: "Base URL for Azure DevOps Server (on-prem). E.g. 'https://azuredo.example.com/tfs/MyCollection'. Defaults to 'https://dev.azure.com/{organization}'.",
     type: "string",
   })
+  .check((argv) => {
+    if (!argv.organization && !argv.baseUrl && !process.env.AZURE_DEVOPS_BASE_URL) {
+      throw new Error("Either <organization> or --base-url (or AZURE_DEVOPS_BASE_URL env var) must be provided.");
+    }
+    return true;
+  })
   .help()
   .parseSync();
 
-export const orgName = argv.organization as string;
-export const orgUrl = (argv.baseUrl as string | undefined) ?? process.env.AZURE_DEVOPS_BASE_URL ?? "https://dev.azure.com/" + orgName;
+export const orgUrl = (argv.baseUrl as string | undefined) ?? process.env.AZURE_DEVOPS_BASE_URL ?? "https://dev.azure.com/" + (argv.organization as string);
+export const orgName = (argv.organization as string | undefined) ?? extractOrgFromUrl(orgUrl);
 
 /**
  * Whether the server is connecting to an on-premises Azure DevOps Server instance
@@ -78,9 +97,8 @@ export const enabledDomains = domainsManager.getEnabledDomains();
 function getAzureDevOpsClient(getAzureDevOpsToken: () => Promise<string>, userAgentComposer: UserAgentComposer, authType: string): () => Promise<WebApi> {
   return async () => {
     const accessToken = await getAzureDevOpsToken();
-    // For pat, accessToken is base64("{email}:{token}"). Decode to extract the token part,
-    // since getPersonalAccessTokenHandler prepends ":" internally and just needs the raw token.
-    const authHandler = authType === "pat" ? getPersonalAccessTokenHandler(Buffer.from(accessToken, "base64").toString("utf8").split(":").slice(1).join(":")) : getBearerHandler(accessToken);
+    // For pat, accessToken is the raw PAT token
+    const authHandler = authType === "pat" ? getPersonalAccessTokenHandler(accessToken) : getBearerHandler(accessToken);
     const connection = new WebApi(orgUrl, authHandler, undefined, {
       productName: "AzureDevOps.MCP",
       productVersion: packageVersion,
@@ -127,8 +145,9 @@ async function main() {
   const authenticator = createAuthenticator(argv.authentication, tenantId);
 
   if (argv.authentication === "pat") {
-    const basicValue = await authenticator();
-    // basicValue is already base64("{email}:{token}") — use it directly in the Authorization header
+    const rawPat = await authenticator();
+    // Build the Basic auth value from the raw PAT: base64(":token")
+    const basicValue = Buffer.from(`:${rawPat}`).toString("base64");
     const _originalFetch = globalThis.fetch;
     globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       if (init?.headers) {

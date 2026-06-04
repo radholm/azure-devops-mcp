@@ -255,7 +255,7 @@ Edit or add `.vscode/mcp.json`:
   "servers": {
     "ado": {
       "type": "stdio",
-      "command": "mcp-server-azuredevops",
+      "command": "azure-devops-mcp",
       "args": ["${input:ado_org}"]
     }
   }

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { describe, expect, it } from "@jest/globals";
 import { z } from "zod";
 import { getEnumKeys } from "../../src/utils.js";
 import { DefinitionQueryOrder, BuildQueryOrder, StageUpdateType } from "azure-devops-node-api/interfaces/BuildInterfaces.js";

@@ -1,38 +1,44 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { jest } from "@jest/globals";
-import fs, { readFile, writeFile } from "fs/promises";
+import { vi, type Mock } from "vitest";
+import { readFile, writeFile } from "fs/promises";
 import { getOrgTenant } from "../../src/org-tenants";
 
-jest.mock("fs/promises");
-jest.mock("../../src/logger.js", () => ({
+vi.mock("fs/promises", () => ({
+  default: {
+    readFile: vi.fn(),
+    writeFile: vi.fn(),
+  },
+  readFile: vi.fn(),
+  writeFile: vi.fn(),
+}));
+vi.mock("../../src/logger.js", () => ({
   logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
-type FetchMock = jest.Mock<typeof fetch>;
+type FetchMock = Mock;
 
 describe("getOrgTenant", () => {
   const orgName = "testorg";
   let mockFetch: FetchMock;
-  let mockReadFile: jest.SpiedFunction<typeof readFile>;
-  let mockWriteFile: jest.SpiedFunction<typeof writeFile>;
+  const mockReadFile = vi.mocked(readFile);
+  const mockWriteFile = vi.mocked(writeFile);
 
   beforeEach(() => {
-    mockFetch = jest.fn() as FetchMock;
+    mockFetch = vi.fn() as FetchMock;
     global.fetch = mockFetch;
-
-    mockReadFile = jest.spyOn(fs, "readFile");
-    mockWriteFile = jest.spyOn(fs, "writeFile");
+    mockReadFile.mockReset();
+    mockWriteFile.mockReset();
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it("should return tenant from cache when entry is valid and not expired", async () => {

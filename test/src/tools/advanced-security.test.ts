@@ -1,7 +1,7 @@
+import { vi } from "vitest";
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { describe, expect, it } from "@jest/globals";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebApi } from "azure-devops-node-api";
 import { Alert, AlertType, AlertValidityStatus, Confidence, Severity, State } from "azure-devops-node-api/interfaces/AlertInterfaces";
@@ -12,37 +12,37 @@ type TokenProviderMock = () => Promise<string>;
 type ConnectionProviderMock = () => Promise<WebApi>;
 
 interface AlertApiMock {
-  getAlerts: jest.Mock;
-  getAlert: jest.Mock;
+  getAlerts: vi.Mock;
+  getAlert: vi.Mock;
 }
 
 describe("configureAdvSecTools", () => {
   let server: McpServer;
   let tokenProvider: TokenProviderMock;
   let connectionProvider: ConnectionProviderMock;
-  let mockConnection: { getAlertApi: jest.Mock };
+  let mockConnection: { getAlertApi: vi.Mock };
   let mockAlertApi: AlertApiMock;
 
   beforeEach(() => {
-    server = { tool: jest.fn() } as unknown as McpServer;
-    tokenProvider = jest.fn();
+    server = { tool: vi.fn() } as unknown as McpServer;
+    tokenProvider = vi.fn();
 
     mockAlertApi = {
-      getAlerts: jest.fn(),
-      getAlert: jest.fn(),
+      getAlerts: vi.fn(),
+      getAlert: vi.fn(),
     };
 
     mockConnection = {
-      getAlertApi: jest.fn().mockResolvedValue(mockAlertApi),
+      getAlertApi: vi.fn().mockResolvedValue(mockAlertApi),
     };
 
-    connectionProvider = jest.fn().mockResolvedValue(mockConnection);
+    connectionProvider = vi.fn().mockResolvedValue(mockConnection);
   });
 
   describe("tool registration", () => {
     it("registers Advanced Security tools on the server", () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
-      expect(server.tool as jest.Mock).toHaveBeenCalled();
+      expect(server.tool as vi.Mock).toHaveBeenCalled();
     });
   });
 
@@ -50,7 +50,7 @@ describe("configureAdvSecTools", () => {
     it("should call getAlerts API with correct parameters and return multiple alerts", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
       if (!call) throw new Error("advsec_get_alerts tool not registered");
       const [, , , handler] = call;
 
@@ -105,7 +105,7 @@ describe("configureAdvSecTools", () => {
         },
       ];
 
-      (mockAlertApi.getAlerts as jest.Mock).mockResolvedValue(mockResult);
+      (mockAlertApi.getAlerts as vi.Mock).mockResolvedValue(mockResult);
 
       const params = {
         project: "test-project",
@@ -146,7 +146,7 @@ describe("configureAdvSecTools", () => {
     it("should handle pagination with continuation token", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
       if (!call) throw new Error("advsec_get_alerts tool not registered");
       const [, , , handler] = call;
 
@@ -187,7 +187,7 @@ describe("configureAdvSecTools", () => {
       ];
       firstPageMockResult.continuationToken = "next-page-token-abc123";
 
-      (mockAlertApi.getAlerts as jest.Mock).mockResolvedValueOnce(firstPageMockResult);
+      (mockAlertApi.getAlerts as vi.Mock).mockResolvedValueOnce(firstPageMockResult);
 
       const firstParams = {
         project: "test-project",
@@ -251,7 +251,7 @@ describe("configureAdvSecTools", () => {
         },
       ];
 
-      (mockAlertApi.getAlerts as jest.Mock).mockResolvedValueOnce(secondPageMockResult);
+      (mockAlertApi.getAlerts as vi.Mock).mockResolvedValueOnce(secondPageMockResult);
 
       const secondParams = {
         project: "test-project",
@@ -306,12 +306,12 @@ describe("configureAdvSecTools", () => {
     it("should handle API errors gracefully", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
       if (!call) throw new Error("advsec_get_alerts tool not registered");
       const [, , , handler] = call;
 
       const testError = new Error("Failed to retrieve alerts");
-      (mockAlertApi.getAlerts as jest.Mock).mockRejectedValue(testError);
+      (mockAlertApi.getAlerts as vi.Mock).mockRejectedValue(testError);
 
       const params = {
         project: "test-project",
@@ -328,11 +328,11 @@ describe("configureAdvSecTools", () => {
     it("should handle null API results correctly", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
       if (!call) throw new Error("advsec_get_alerts tool not registered");
       const [, , , handler] = call;
 
-      (mockAlertApi.getAlerts as jest.Mock).mockResolvedValue(null);
+      (mockAlertApi.getAlerts as vi.Mock).mockResolvedValue(null);
 
       const params = {
         project: "test-project",
@@ -348,7 +348,7 @@ describe("configureAdvSecTools", () => {
     it("should conditionally include confidenceLevels and validity only for secret alerts", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
       if (!call) throw new Error("advsec_get_alerts tool not registered");
       const [, , , handler] = call;
 
@@ -361,7 +361,7 @@ describe("configureAdvSecTools", () => {
         },
       ];
 
-      (mockAlertApi.getAlerts as jest.Mock).mockResolvedValue(mockResult);
+      (mockAlertApi.getAlerts as vi.Mock).mockResolvedValue(mockResult);
 
       // Test 1: Secret alert type - should include confidenceLevels and validity
       const secretParams = {
@@ -412,7 +412,7 @@ describe("configureAdvSecTools", () => {
       );
 
       // Verify that confidenceLevels and validity are NOT in the criteria for code alerts
-      const lastCall = (mockAlertApi.getAlerts as jest.Mock).mock.calls[1];
+      const lastCall = (mockAlertApi.getAlerts as vi.Mock).mock.calls[1];
       const criteriaForCodeAlert = lastCall[4];
       expect(criteriaForCodeAlert).not.toHaveProperty("confidenceLevels");
       expect(criteriaForCodeAlert).not.toHaveProperty("validity");
@@ -444,12 +444,12 @@ describe("configureAdvSecTools", () => {
     it("should handle optional parameters correctly when not provided", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
       if (!call) throw new Error("advsec_get_alerts tool not registered");
       const [, , , handler] = call;
 
       const mockResult: PagedList<Alert> = [];
-      (mockAlertApi.getAlerts as jest.Mock).mockResolvedValue(mockResult);
+      (mockAlertApi.getAlerts as vi.Mock).mockResolvedValue(mockResult);
 
       // Test with minimal parameters - only required ones
       const minimalParams = {
@@ -474,12 +474,12 @@ describe("configureAdvSecTools", () => {
     it("should include all optional parameters when provided", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
       if (!call) throw new Error("advsec_get_alerts tool not registered");
       const [, , , handler] = call;
 
       const mockResult: PagedList<Alert> = [];
-      (mockAlertApi.getAlerts as jest.Mock).mockResolvedValue(mockResult);
+      (mockAlertApi.getAlerts as vi.Mock).mockResolvedValue(mockResult);
 
       // Test with all optional parameters provided
       const allParamsParams = {
@@ -520,7 +520,7 @@ describe("configureAdvSecTools", () => {
       );
 
       // Verify all optional fields are included
-      const lastCall = (mockAlertApi.getAlerts as jest.Mock).mock.calls[0];
+      const lastCall = (mockAlertApi.getAlerts as vi.Mock).mock.calls[0];
       const criteria = lastCall[4];
       expect(criteria).toHaveProperty("alertType", AlertType.Dependency);
       expect(criteria).toHaveProperty("states", [State.Active, State.Dismissed]);
@@ -535,12 +535,12 @@ describe("configureAdvSecTools", () => {
     it("should handle onlyDefaultBranch parameter correctly", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
       if (!call) throw new Error("advsec_get_alerts tool not registered");
       const [, , , handler] = call;
 
       const mockResult: PagedList<Alert> = [];
-      (mockAlertApi.getAlerts as jest.Mock).mockResolvedValue(mockResult);
+      (mockAlertApi.getAlerts as vi.Mock).mockResolvedValue(mockResult);
 
       // Test with onlyDefaultBranch explicitly set to false
       const falseParams = {
@@ -588,12 +588,12 @@ describe("configureAdvSecTools", () => {
     it("should handle secret alerts without confidenceLevels or validity", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
       if (!call) throw new Error("advsec_get_alerts tool not registered");
       const [, , , handler] = call;
 
       const mockResult: PagedList<Alert> = [];
-      (mockAlertApi.getAlerts as jest.Mock).mockResolvedValue(mockResult);
+      (mockAlertApi.getAlerts as vi.Mock).mockResolvedValue(mockResult);
 
       // Test secret alert without confidenceLevels or validity explicitly provided
       const secretWithoutParams = {
@@ -604,7 +604,7 @@ describe("configureAdvSecTools", () => {
 
       await handler(secretWithoutParams);
 
-      const lastCall = (mockAlertApi.getAlerts as jest.Mock).mock.calls[0];
+      const lastCall = (mockAlertApi.getAlerts as vi.Mock).mock.calls[0];
       const criteria = lastCall[4];
       expect(criteria).toHaveProperty("alertType", AlertType.Secret);
       // confidenceLevels and validity should not be included if not explicitly provided
@@ -615,12 +615,12 @@ describe("configureAdvSecTools", () => {
     it("should handle non-Error exception types", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alerts");
       if (!call) throw new Error("advsec_get_alerts tool not registered");
       const [, , , handler] = call;
 
       // Test with non-Error exception (string)
-      (mockAlertApi.getAlerts as jest.Mock).mockRejectedValue("String error");
+      (mockAlertApi.getAlerts as vi.Mock).mockRejectedValue("String error");
 
       const params = {
         project: "test-project",
@@ -638,7 +638,7 @@ describe("configureAdvSecTools", () => {
     it("should fetch specific alert details", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alert_details");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alert_details");
       if (!call) throw new Error("advsec_get_alert_details tool not registered");
       const [, , , handler] = call;
 
@@ -659,7 +659,7 @@ describe("configureAdvSecTools", () => {
         ],
       };
 
-      (mockAlertApi.getAlert as jest.Mock).mockResolvedValue(mockResult);
+      (mockAlertApi.getAlert as vi.Mock).mockResolvedValue(mockResult);
 
       const params = {
         project: "test-project",
@@ -684,7 +684,7 @@ describe("configureAdvSecTools", () => {
     it("should fetch specific alert details with ref parameter", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alert_details");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alert_details");
       if (!call) throw new Error("advsec_get_alert_details tool not registered");
       const [, , , handler] = call;
 
@@ -696,7 +696,7 @@ describe("configureAdvSecTools", () => {
         title: "Test security alert",
       };
 
-      (mockAlertApi.getAlert as jest.Mock).mockResolvedValue(mockResult);
+      (mockAlertApi.getAlert as vi.Mock).mockResolvedValue(mockResult);
 
       const params = {
         project: "test-project",
@@ -722,12 +722,12 @@ describe("configureAdvSecTools", () => {
     it("should handle API errors correctly", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alert_details");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alert_details");
       if (!call) throw new Error("advsec_get_alert_details tool not registered");
       const [, , , handler] = call;
 
       const testError = new Error("Alert not found");
-      (mockAlertApi.getAlert as jest.Mock).mockRejectedValue(testError);
+      (mockAlertApi.getAlert as vi.Mock).mockRejectedValue(testError);
 
       const params = {
         project: "test-project",
@@ -745,12 +745,12 @@ describe("configureAdvSecTools", () => {
     it("should handle non-Error exception types", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alert_details");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alert_details");
       if (!call) throw new Error("advsec_get_alert_details tool not registered");
       const [, , , handler] = call;
 
       // Test with non-Error exception (string)
-      (mockAlertApi.getAlert as jest.Mock).mockRejectedValue("String error");
+      (mockAlertApi.getAlert as vi.Mock).mockRejectedValue("String error");
 
       const params = {
         project: "test-project",
@@ -767,11 +767,11 @@ describe("configureAdvSecTools", () => {
     it("should handle null API results correctly", async () => {
       configureAdvSecTools(server, tokenProvider, connectionProvider);
 
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alert_details");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "advsec_get_alert_details");
       if (!call) throw new Error("advsec_get_alert_details tool not registered");
       const [, , , handler] = call;
 
-      (mockAlertApi.getAlert as jest.Mock).mockResolvedValue(null);
+      (mockAlertApi.getAlert as vi.Mock).mockResolvedValue(null);
 
       const params = {
         project: "test-project",

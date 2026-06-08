@@ -17,28 +17,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
-      # npm 11.5.1 or later is required for OIDC integration
-      - name: Update npm
-        run: npm install -g npm@latest
-
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile --ignore-scripts
 
       - name: Build the project
-        run: npm run build --if-present
+        run: bun run build
 
       - name: Run tests
-        run: npm test
+        run: bun run test
 
       - name: Publish to npm with nightly version
         run: |
           DATE_STRING=$(date +%Y%m%d)
-          CURRENT_VERSION=$(npm pkg get version | tr -d '"')
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
           npm version "$CURRENT_VERSION-nightly.$DATE_STRING" --no-git-tag-version
           npm publish --access public --tag nightly --tag next --provenance

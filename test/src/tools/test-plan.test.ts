@@ -1,7 +1,7 @@
+import { vi } from "vitest";
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { describe, expect, it } from "@jest/globals";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebApi } from "azure-devops-node-api";
 import { configureTestPlanTools } from "../../../src/tools/test-plans";
@@ -32,42 +32,42 @@ describe("configureTestPlanTools", () => {
   let mockTestApi: ITestApi;
 
   beforeEach(() => {
-    server = { tool: jest.fn() } as unknown as McpServer;
-    tokenProvider = jest.fn().mockResolvedValue("test-token");
-    userAgentProvider = jest.fn().mockReturnValue("test-agent");
+    server = { tool: vi.fn() } as unknown as McpServer;
+    tokenProvider = vi.fn().mockResolvedValue("test-token");
+    userAgentProvider = vi.fn().mockReturnValue("test-agent");
     mockTestPlanApi = {
-      getTestPlans: jest.fn(),
-      createTestPlan: jest.fn(),
-      createTestSuite: jest.fn(),
-      addTestCasesToSuite: jest.fn(),
-      getTestCaseList: jest.fn(),
+      getTestPlans: vi.fn(),
+      createTestPlan: vi.fn(),
+      createTestSuite: vi.fn(),
+      addTestCasesToSuite: vi.fn(),
+      getTestCaseList: vi.fn(),
     } as unknown as ITestPlanApi;
     mockTestResultsApi = {
-      getTestResultDetailsForBuild: jest.fn(),
-      getTestRuns: jest.fn(),
-      getTestResults: jest.fn(),
+      getTestResultDetailsForBuild: vi.fn(),
+      getTestRuns: vi.fn(),
+      getTestResults: vi.fn(),
     } as unknown as ITestResultsApi;
     mockWitApi = {
-      createWorkItem: jest.fn(),
-      updateWorkItem: jest.fn(),
+      createWorkItem: vi.fn(),
+      updateWorkItem: vi.fn(),
     } as unknown as IWorkItemTrackingApi;
     mockTestApi = {
-      addTestCasesToSuite: jest.fn(),
+      addTestCasesToSuite: vi.fn(),
     } as unknown as ITestApi;
     mockConnection = {
-      getTestPlanApi: jest.fn().mockResolvedValue(mockTestPlanApi),
-      getTestResultsApi: jest.fn().mockResolvedValue(mockTestResultsApi),
-      getWorkItemTrackingApi: jest.fn().mockResolvedValue(mockWitApi),
-      getTestApi: jest.fn().mockResolvedValue(mockTestApi),
+      getTestPlanApi: vi.fn().mockResolvedValue(mockTestPlanApi),
+      getTestResultsApi: vi.fn().mockResolvedValue(mockTestResultsApi),
+      getWorkItemTrackingApi: vi.fn().mockResolvedValue(mockWitApi),
+      getTestApi: vi.fn().mockResolvedValue(mockTestApi),
       serverUrl: "https://dev.azure.com/testorg",
     };
-    connectionProvider = jest.fn().mockResolvedValue(mockConnection);
+    connectionProvider = vi.fn().mockResolvedValue(mockConnection);
   });
 
   describe("tool registration", () => {
     it("registers test plan tools on the server", () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      expect((server.tool as jest.Mock).mock.calls.map((call) => call[0])).toEqual(
+      expect((server.tool as vi.Mock).mock.calls.map((call) => call[0])).toEqual(
         expect.arrayContaining([
           "testplan_list_test_plans",
           "testplan_create_test_plan",
@@ -89,19 +89,19 @@ describe("configureTestPlanTools", () => {
       if (continuationToken) {
         headers.set("x-ms-continuationtoken", continuationToken);
       }
-      (global.fetch as jest.Mock) = jest.fn().mockResolvedValue({
+      (global.fetch as vi.Mock) = vi.fn().mockResolvedValue({
         ok,
         status,
         statusText: ok ? "OK" : "Not Found",
-        json: jest.fn().mockResolvedValue({ value }),
-        text: jest.fn().mockResolvedValue(errorText),
+        json: vi.fn().mockResolvedValue({ value }),
+        text: vi.fn().mockResolvedValue(errorText),
         headers: { get: (key: string) => headers.get(key) ?? null },
       });
     }
 
     it("should fetch test plans and return the expected result", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_plans");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_plans");
       if (!call) throw new Error("testplan_list_test_plans tool not registered");
       const [, , , handler] = call;
 
@@ -121,11 +121,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle API errors when listing test plans", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_plans");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_plans");
       if (!call) throw new Error("testplan_list_test_plans tool not registered");
       const [, , , handler] = call;
 
-      (global.fetch as jest.Mock) = jest.fn().mockRejectedValue(new Error("API Error"));
+      (global.fetch as vi.Mock) = vi.fn().mockRejectedValue(new Error("API Error"));
 
       const params = {
         project: "proj1",
@@ -141,7 +141,7 @@ describe("configureTestPlanTools", () => {
 
     it("should pass continuation token in URL when provided", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_plans");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_plans");
       if (!call) throw new Error("testplan_list_test_plans tool not registered");
       const [, , , handler] = call;
 
@@ -156,7 +156,7 @@ describe("configureTestPlanTools", () => {
 
     it("should handle non-ok response with status and error text", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_plans");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_plans");
       if (!call) throw new Error("testplan_list_test_plans tool not registered");
       const [, , , handler] = call;
 
@@ -175,19 +175,19 @@ describe("configureTestPlanTools", () => {
       if (continuationToken) {
         headers.set("x-ms-continuationtoken", continuationToken);
       }
-      (global.fetch as jest.Mock) = jest.fn().mockResolvedValue({
+      (global.fetch as vi.Mock) = vi.fn().mockResolvedValue({
         ok,
         status,
         statusText: ok ? "OK" : "Not Found",
-        json: jest.fn().mockResolvedValue({ value }),
-        text: jest.fn().mockResolvedValue(errorText),
+        json: vi.fn().mockResolvedValue({ value }),
+        text: vi.fn().mockResolvedValue(errorText),
         headers: { get: (key: string) => headers.get(key) ?? null },
       });
     }
 
     it("should fetch test suites and return properly nested hierarchy", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
       if (!call) throw new Error("testplan_list_test_suites tool not registered");
       const [, , , handler] = call;
 
@@ -253,7 +253,7 @@ describe("configureTestPlanTools", () => {
 
     it("should handle test suite with no children", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
       if (!call) throw new Error("testplan_list_test_suites tool not registered");
       const [, , , handler] = call;
 
@@ -272,7 +272,7 @@ describe("configureTestPlanTools", () => {
 
     it("should handle empty test suite list", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
       if (!call) throw new Error("testplan_list_test_suites tool not registered");
       const [, , , handler] = call;
 
@@ -290,7 +290,7 @@ describe("configureTestPlanTools", () => {
 
     it("should handle deeply nested suite hierarchy", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
       if (!call) throw new Error("testplan_list_test_suites tool not registered");
       const [, , , handler] = call;
 
@@ -355,11 +355,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle API errors when listing test suites", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
       if (!call) throw new Error("testplan_list_test_suites tool not registered");
       const [, , , handler] = call;
 
-      (global.fetch as jest.Mock) = jest.fn().mockRejectedValue(new Error("API Error"));
+      (global.fetch as vi.Mock) = vi.fn().mockRejectedValue(new Error("API Error"));
 
       const params = {
         project: "proj1",
@@ -373,7 +373,7 @@ describe("configureTestPlanTools", () => {
 
     it("should pass continuation token in URL when provided", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
       if (!call) throw new Error("testplan_list_test_suites tool not registered");
       const [, , , handler] = call;
 
@@ -393,7 +393,7 @@ describe("configureTestPlanTools", () => {
 
     it("should not include empty children arrays in output", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
       if (!call) throw new Error("testplan_list_test_suites tool not registered");
       const [, , , handler] = call;
 
@@ -425,7 +425,7 @@ describe("configureTestPlanTools", () => {
 
     it("should handle non-ok response with status and error text", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_suites");
       if (!call) throw new Error("testplan_list_test_suites tool not registered");
       const [, , , handler] = call;
 
@@ -441,11 +441,11 @@ describe("configureTestPlanTools", () => {
   describe("create_test_plan tool", () => {
     it("should call createTestPlan with the correct parameters and return the expected result", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_plan");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_plan");
       if (!call) throw new Error("testplan_create_test_plan tool not registered");
       const [, , , handler] = call;
 
-      (mockTestPlanApi.createTestPlan as jest.Mock).mockResolvedValue({ id: 1, name: "New Test Plan" });
+      (mockTestPlanApi.createTestPlan as vi.Mock).mockResolvedValue({ id: 1, name: "New Test Plan" });
       const params = {
         project: "proj1",
         name: "New Test Plan",
@@ -473,11 +473,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle API errors when creating test plan", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_plan");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_plan");
       if (!call) throw new Error("testplan_create_test_plan tool not registered");
       const [, , , handler] = call;
 
-      (mockTestPlanApi.createTestPlan as jest.Mock).mockRejectedValue(new Error("API Error"));
+      (mockTestPlanApi.createTestPlan as vi.Mock).mockRejectedValue(new Error("API Error"));
 
       const params = {
         project: "proj1",
@@ -495,11 +495,11 @@ describe("configureTestPlanTools", () => {
   describe("create_test_suite tool", () => {
     it("should call createTestSuite with the correct parameters and return the expected result", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_suite");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_suite");
       if (!call) throw new Error("testplan_create_test_suite tool not registered");
       const [, , , handler] = call;
 
-      (mockTestPlanApi.createTestSuite as jest.Mock).mockResolvedValue({ id: 10, name: "New Test Suite" });
+      (mockTestPlanApi.createTestSuite as vi.Mock).mockResolvedValue({ id: 10, name: "New Test Suite" });
       const params = {
         project: "proj1",
         planId: 1,
@@ -525,11 +525,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle API errors when creating test suite", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_suite");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_suite");
       if (!call) throw new Error("testplan_create_test_suite tool not registered");
       const [, , , handler] = call;
 
-      (mockTestPlanApi.createTestSuite as jest.Mock).mockRejectedValue(new Error("API Error"));
+      (mockTestPlanApi.createTestSuite as vi.Mock).mockRejectedValue(new Error("API Error"));
 
       const params = {
         project: "proj1",
@@ -546,11 +546,11 @@ describe("configureTestPlanTools", () => {
 
     it("should create test suite with different parent suite IDs", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_suite");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_suite");
       if (!call) throw new Error("testplan_create_test_suite tool not registered");
       const [, , , handler] = call;
 
-      (mockTestPlanApi.createTestSuite as jest.Mock).mockResolvedValue({
+      (mockTestPlanApi.createTestSuite as vi.Mock).mockResolvedValue({
         id: 15,
         name: "Child Test Suite",
         parentSuite: { id: 10 },
@@ -590,11 +590,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle empty or null response from createTestSuite", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_suite");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_suite");
       if (!call) throw new Error("testplan_create_test_suite tool not registered");
       const [, , , handler] = call;
 
-      (mockTestPlanApi.createTestSuite as jest.Mock).mockResolvedValue(null);
+      (mockTestPlanApi.createTestSuite as vi.Mock).mockResolvedValue(null);
       const params = {
         project: "proj1",
         planId: 1,
@@ -613,19 +613,19 @@ describe("configureTestPlanTools", () => {
       if (continuationToken) {
         headers.set("x-ms-continuationtoken", continuationToken);
       }
-      (global.fetch as jest.Mock) = jest.fn().mockResolvedValue({
+      (global.fetch as vi.Mock) = vi.fn().mockResolvedValue({
         ok,
         status,
         statusText: ok ? "OK" : "Not Found",
-        json: jest.fn().mockResolvedValue({ value }),
-        text: jest.fn().mockResolvedValue(errorText),
+        json: vi.fn().mockResolvedValue({ value }),
+        text: vi.fn().mockResolvedValue(errorText),
         headers: { get: (key: string) => headers.get(key) ?? null },
       });
     }
 
     it("should fetch test cases and return the expected result", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_cases");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_cases");
       if (!call) throw new Error("testplan_list_test_cases tool not registered");
       const [, , , handler] = call;
 
@@ -639,11 +639,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle API errors when listing test cases", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_cases");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_cases");
       if (!call) throw new Error("testplan_list_test_cases tool not registered");
       const [, , , handler] = call;
 
-      (global.fetch as jest.Mock) = jest.fn().mockRejectedValue(new Error("API Error"));
+      (global.fetch as vi.Mock) = vi.fn().mockRejectedValue(new Error("API Error"));
 
       const result = await handler({ project: "proj1", planid: 1, suiteid: 2 });
       expect(result.isError).toBe(true);
@@ -653,7 +653,7 @@ describe("configureTestPlanTools", () => {
 
     it("should pass continuation token when provided", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_cases");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_cases");
       if (!call) throw new Error("testplan_list_test_cases tool not registered");
       const [, , , handler] = call;
 
@@ -669,7 +669,7 @@ describe("configureTestPlanTools", () => {
 
     it("should not include continuationToken when API does not return one", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_cases");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_cases");
       if (!call) throw new Error("testplan_list_test_cases tool not registered");
       const [, , , handler] = call;
 
@@ -683,7 +683,7 @@ describe("configureTestPlanTools", () => {
 
     it("should handle non-ok response with status and error text", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider, userAgentProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_cases");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_list_test_cases");
       if (!call) throw new Error("testplan_list_test_cases tool not registered");
       const [, , , handler] = call;
 
@@ -699,11 +699,11 @@ describe("configureTestPlanTools", () => {
   describe("test_results_from_build_id tool", () => {
     it("should fetch test result details for build and return formatted output", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
       if (!call) throw new Error("testplan_show_test_results_from_build_id tool not registered");
       const [, , , handler] = call;
 
-      (mockTestResultsApi.getTestResultDetailsForBuild as jest.Mock).mockResolvedValue({
+      (mockTestResultsApi.getTestResultDetailsForBuild as vi.Mock).mockResolvedValue({
         resultsForGroup: [
           {
             results: [
@@ -747,11 +747,11 @@ describe("configureTestPlanTools", () => {
 
     it("should pass outcome filter expression for server-side filtering", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
       if (!call) throw new Error("testplan_show_test_results_from_build_id tool not registered");
       const [, , , handler] = call;
 
-      (mockTestResultsApi.getTestResultDetailsForBuild as jest.Mock).mockResolvedValue({
+      (mockTestResultsApi.getTestResultDetailsForBuild as vi.Mock).mockResolvedValue({
         resultsForGroup: [],
       });
 
@@ -770,11 +770,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle API errors when fetching test results", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
       if (!call) throw new Error("testplan_show_test_results_from_build_id tool not registered");
       const [, , , handler] = call;
 
-      (mockTestResultsApi.getTestResultDetailsForBuild as jest.Mock).mockRejectedValue(new Error("API Error"));
+      (mockTestResultsApi.getTestResultDetailsForBuild as vi.Mock).mockRejectedValue(new Error("API Error"));
 
       const result = await handler({ project: "proj1", buildid: 123 });
       expect(result.isError).toBe(true);
@@ -784,12 +784,12 @@ describe("configureTestPlanTools", () => {
 
     it("should return test case titles for all results across multiple groups", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
       if (!call) throw new Error("testplan_show_test_results_from_build_id tool not registered");
       const [, , , handler] = call;
 
       // Simulate multiple groups (e.g., grouped by configuration or test suite)
-      (mockTestResultsApi.getTestResultDetailsForBuild as jest.Mock).mockResolvedValue({
+      (mockTestResultsApi.getTestResultDetailsForBuild as vi.Mock).mockResolvedValue({
         resultsForGroup: [
           {
             groupByValue: "Configuration1",
@@ -846,7 +846,7 @@ describe("configureTestPlanTools", () => {
 
     it("should handle large result groups without spreading them onto the stack", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
       if (!call) throw new Error("testplan_show_test_results_from_build_id tool not registered");
       const [, , , handler] = call;
 
@@ -856,7 +856,7 @@ describe("configureTestPlanTools", () => {
         outcome: "Passed",
       }));
 
-      (mockTestResultsApi.getTestResultDetailsForBuild as jest.Mock).mockResolvedValue({
+      (mockTestResultsApi.getTestResultDetailsForBuild as vi.Mock).mockResolvedValue({
         resultsForGroup: [{ results: largeResults }],
       });
 
@@ -870,11 +870,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle empty results groups without errors", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
       if (!call) throw new Error("testplan_show_test_results_from_build_id tool not registered");
       const [, , , handler] = call;
 
-      (mockTestResultsApi.getTestResultDetailsForBuild as jest.Mock).mockResolvedValue({
+      (mockTestResultsApi.getTestResultDetailsForBuild as vi.Mock).mockResolvedValue({
         resultsForGroup: [
           {
             groupByValue: "EmptyGroup",
@@ -902,11 +902,11 @@ describe("configureTestPlanTools", () => {
 
     it("should return test case titles when present and handle missing titles gracefully", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_show_test_results_from_build_id");
       if (!call) throw new Error("testplan_show_test_results_from_build_id tool not registered");
       const [, , , handler] = call;
 
-      (mockTestResultsApi.getTestResultDetailsForBuild as jest.Mock).mockResolvedValue({
+      (mockTestResultsApi.getTestResultDetailsForBuild as vi.Mock).mockResolvedValue({
         resultsForGroup: [
           {
             results: [
@@ -956,11 +956,11 @@ describe("configureTestPlanTools", () => {
   describe("create_test_case tool", () => {
     it("should create test case with proper parameters", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1001,
         fields: {
           "System.Title": "New Test Case",
@@ -993,11 +993,11 @@ describe("configureTestPlanTools", () => {
 
     it("should create test case & expected result with proper parameters", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1001,
         fields: {
           "System.Title": "New Test Case",
@@ -1030,11 +1030,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle multiple steps in test case", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1002,
         fields: {
           "System.Title": "Multi-step Test Case",
@@ -1064,11 +1064,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle API errors in test case creation", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockRejectedValue(new Error("API Error"));
+      (mockWitApi.createWorkItem as vi.Mock).mockRejectedValue(new Error("API Error"));
 
       const params = {
         project: "proj1",
@@ -1084,11 +1084,11 @@ describe("configureTestPlanTools", () => {
 
     it("should create test case with all optional parameters", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1004,
         fields: {
           "System.Title": "Full Test Case",
@@ -1151,11 +1151,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle non-numbered step formats", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1005,
         fields: {
           "System.Title": "Non-numbered Test Case",
@@ -1208,11 +1208,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle empty lines in steps", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1006,
         fields: {
           "System.Title": "Empty Lines Test Case",
@@ -1243,11 +1243,11 @@ describe("configureTestPlanTools", () => {
 
     it("should create test case without steps", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1007,
         fields: {
           "System.Title": "No Steps Test Case",
@@ -1288,11 +1288,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle edge case XML characters", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1008,
         fields: {
           "System.Title": "Edge Case XML Test",
@@ -1333,11 +1333,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle empty string steps", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1009,
         fields: {
           "System.Title": "Empty String Steps Test",
@@ -1367,11 +1367,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle only whitespace steps", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1010,
         fields: {
           "System.Title": "Whitespace Steps Test",
@@ -1401,11 +1401,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle steps with pipe delimiter for expected results", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1011,
         fields: {
           "System.Title": "Pipe Delimiter Test",
@@ -1451,11 +1451,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle steps without pipe delimiter using default expected result", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1012,
         fields: {
           "System.Title": "Default Expected Result Test",
@@ -1493,11 +1493,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle mixed steps with and without pipe delimiter", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1013,
         fields: {
           "System.Title": "Mixed Delimiter Test",
@@ -1547,11 +1547,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle empty expected result after pipe delimiter", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1014,
         fields: {
           "System.Title": "Empty Expected Result Test",
@@ -1589,11 +1589,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle multiple pipe characters in expected result", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1015,
         fields: {
           "System.Title": "Multiple Pipes Test",
@@ -1631,11 +1631,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle whitespace around pipe delimiter", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1016,
         fields: {
           "System.Title": "Whitespace Pipe Test",
@@ -1685,11 +1685,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle special characters in expected results", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1017,
         fields: {
           "System.Title": "Special Characters Expected Test",
@@ -1735,11 +1735,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle non-numbered steps with pipe delimiter", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 1018,
         fields: {
           "System.Title": "Non-numbered Pipe Test",
@@ -1789,11 +1789,11 @@ describe("configureTestPlanTools", () => {
 
     it("should create test case with testsWorkItemId relationship", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 2001,
         fields: {
           "System.Title": "Test Case with Link",
@@ -1855,11 +1855,11 @@ describe("configureTestPlanTools", () => {
 
     it("should create test case without testsWorkItemId when not provided", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 2002,
         fields: {
           "System.Title": "Test Case without Link",
@@ -1874,7 +1874,7 @@ describe("configureTestPlanTools", () => {
       };
       const result = await handler(params);
 
-      const patchDocument = (mockWitApi.createWorkItem as jest.Mock).mock.calls[0][1];
+      const patchDocument = (mockWitApi.createWorkItem as vi.Mock).mock.calls[0][1];
       const relationsPatch = patchDocument.find((patch: { path: string }) => patch.path === "/relations/-");
 
       expect(relationsPatch).toBeUndefined();
@@ -1905,11 +1905,11 @@ describe("configureTestPlanTools", () => {
 
     it("should create test case with testsWorkItemId and all other optional parameters", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_create_test_case");
       if (!call) throw new Error("testplan_create_test_case tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.createWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.createWorkItem as vi.Mock).mockResolvedValue({
         id: 2003,
         fields: {
           "System.Title": "Complete Test Case with Link",
@@ -1974,11 +1974,11 @@ describe("configureTestPlanTools", () => {
   describe("update_test_case_steps tool", () => {
     it("should update test case steps with proper parameters", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
       if (!call) throw new Error("testplan_update_test_case_steps tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.updateWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.updateWorkItem as vi.Mock).mockResolvedValue({
         id: 136717,
         rev: 2,
         fields: {
@@ -2012,11 +2012,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle steps with pipe delimiter for expected results", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
       if (!call) throw new Error("testplan_update_test_case_steps tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.updateWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.updateWorkItem as vi.Mock).mockResolvedValue({
         id: 136718,
         rev: 3,
         fields: {
@@ -2057,11 +2057,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle steps without pipe delimiter using default expected result", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
       if (!call) throw new Error("testplan_update_test_case_steps tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.updateWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.updateWorkItem as vi.Mock).mockResolvedValue({
         id: 136719,
         rev: 2,
         fields: {
@@ -2102,11 +2102,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle XML special characters in steps", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
       if (!call) throw new Error("testplan_update_test_case_steps tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.updateWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.updateWorkItem as vi.Mock).mockResolvedValue({
         id: 136720,
         rev: 2,
         fields: {
@@ -2139,11 +2139,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle empty or whitespace-only steps", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
       if (!call) throw new Error("testplan_update_test_case_steps tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.updateWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.updateWorkItem as vi.Mock).mockResolvedValue({
         id: 136721,
         rev: 2,
         fields: {
@@ -2176,11 +2176,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle API errors when updating test case steps", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
       if (!call) throw new Error("testplan_update_test_case_steps tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.updateWorkItem as jest.Mock).mockRejectedValue(new Error("API Error"));
+      (mockWitApi.updateWorkItem as vi.Mock).mockRejectedValue(new Error("API Error"));
 
       const params = {
         id: 136722,
@@ -2195,11 +2195,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle mixed numbered and non-numbered steps", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
       if (!call) throw new Error("testplan_update_test_case_steps tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.updateWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.updateWorkItem as vi.Mock).mockResolvedValue({
         id: 136723,
         rev: 2,
         fields: {
@@ -2244,11 +2244,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle multiple pipe characters in expected results", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
       if (!call) throw new Error("testplan_update_test_case_steps tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.updateWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.updateWorkItem as vi.Mock).mockResolvedValue({
         id: 136724,
         rev: 2,
         fields: {
@@ -2281,11 +2281,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle empty expected results after pipe delimiter", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_update_test_case_steps");
       if (!call) throw new Error("testplan_update_test_case_steps tool not registered");
       const [, , , handler] = call;
 
-      (mockWitApi.updateWorkItem as jest.Mock).mockResolvedValue({
+      (mockWitApi.updateWorkItem as vi.Mock).mockResolvedValue({
         id: 136725,
         rev: 2,
         fields: {
@@ -2324,11 +2324,11 @@ describe("configureTestPlanTools", () => {
   describe("add_test_cases_to_suite tool", () => {
     it("should add test cases to suite with array of IDs", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_add_test_cases_to_suite");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_add_test_cases_to_suite");
       if (!call) throw new Error("testplan_add_test_cases_to_suite tool not registered");
       const [, , , handler] = call;
 
-      (mockTestApi.addTestCasesToSuite as jest.Mock).mockResolvedValue([{ testCase: { id: 1001 } }, { testCase: { id: 1002 } }]);
+      (mockTestApi.addTestCasesToSuite as vi.Mock).mockResolvedValue([{ testCase: { id: 1001 } }, { testCase: { id: 1002 } }]);
 
       const params = {
         project: "proj1",
@@ -2344,11 +2344,11 @@ describe("configureTestPlanTools", () => {
 
     it("should add test cases to suite with comma-separated string", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_add_test_cases_to_suite");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_add_test_cases_to_suite");
       if (!call) throw new Error("testplan_add_test_cases_to_suite tool not registered");
       const [, , , handler] = call;
 
-      (mockTestApi.addTestCasesToSuite as jest.Mock).mockResolvedValue([{ testCase: { id: 1003 } }, { testCase: { id: 1004 } }]);
+      (mockTestApi.addTestCasesToSuite as vi.Mock).mockResolvedValue([{ testCase: { id: 1003 } }, { testCase: { id: 1004 } }]);
 
       const params = {
         project: "proj1",
@@ -2364,11 +2364,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle empty results when adding test cases", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_add_test_cases_to_suite");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_add_test_cases_to_suite");
       if (!call) throw new Error("testplan_add_test_cases_to_suite tool not registered");
       const [, , , handler] = call;
 
-      (mockTestApi.addTestCasesToSuite as jest.Mock).mockResolvedValue([]);
+      (mockTestApi.addTestCasesToSuite as vi.Mock).mockResolvedValue([]);
 
       const params = {
         project: "proj1",
@@ -2383,11 +2383,11 @@ describe("configureTestPlanTools", () => {
 
     it("should handle API errors when adding test cases to suite", async () => {
       configureTestPlanTools(server, tokenProvider, connectionProvider);
-      const call = (server.tool as jest.Mock).mock.calls.find(([toolName]) => toolName === "testplan_add_test_cases_to_suite");
+      const call = (server.tool as vi.Mock).mock.calls.find(([toolName]) => toolName === "testplan_add_test_cases_to_suite");
       if (!call) throw new Error("testplan_add_test_cases_to_suite tool not registered");
       const [, , , handler] = call;
 
-      (mockTestApi.addTestCasesToSuite as jest.Mock).mockRejectedValue(new Error("API Error"));
+      (mockTestApi.addTestCasesToSuite as vi.Mock).mockRejectedValue(new Error("API Error"));
 
       const params = {
         project: "proj1",

@@ -1,29 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { describe, expect, it, beforeEach, afterEach } from "@jest/globals";
-import { jest } from "@jest/globals";
+import { vi } from "vitest";
 
-jest.mock("../../src/logger.js", () => ({
+vi.mock("../../src/logger.js", () => ({
   logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
-jest.mock("@azure/identity", () => ({
-  AzureCliCredential: jest.fn(),
-  ChainedTokenCredential: jest.fn(),
-  DefaultAzureCredential: jest.fn(),
+vi.mock("@azure/identity", () => ({
+  AzureCliCredential: vi.fn(),
+  ChainedTokenCredential: vi.fn(),
+  DefaultAzureCredential: vi.fn(),
 }));
 
-jest.mock("@azure/msal-node", () => ({
-  PublicClientApplication: jest.fn(),
+vi.mock("@azure/msal-node", () => ({
+  PublicClientApplication: vi.fn(),
 }));
 
-jest.mock("open", () => jest.fn());
+vi.mock("open", () => ({ default: vi.fn() }));
 
 import { createAuthenticator } from "../../src/auth";
 

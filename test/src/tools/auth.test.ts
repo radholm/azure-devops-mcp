@@ -1,7 +1,7 @@
+import { vi } from "vitest";
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { describe, expect, it, beforeEach, afterEach } from "@jest/globals";
 import { WebApi } from "azure-devops-node-api";
 import { getCurrentUserDetails, getUserIdFromEmail, searchIdentities } from "../../../src/tools/auth";
 
@@ -15,27 +15,27 @@ describe("auth functions", () => {
   let mockConnection: WebApi;
 
   beforeEach(() => {
-    tokenProvider = jest.fn();
+    tokenProvider = vi.fn();
     userAgentProvider = () => "Jest";
 
     mockConnection = {
       serverUrl: "https://dev.azure.com/test-org",
     } as WebApi;
 
-    connectionProvider = jest.fn().mockResolvedValue(mockConnection);
+    connectionProvider = vi.fn().mockResolvedValue(mockConnection);
 
     // Mock fetch globally for these tests
-    global.fetch = jest.fn();
+    global.fetch = vi.fn();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("getCurrentUserDetails", () => {
     it("should fetch current user details with correct parameters", async () => {
       // Mock token provider
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
       // Mock fetch response
       const mockUserData = {
@@ -46,9 +46,9 @@ describe("auth functions", () => {
         },
       };
 
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(mockUserData),
+        json: vi.fn().mockResolvedValue(mockUserData),
       });
 
       const result = await getCurrentUserDetails(tokenProvider, connectionProvider, userAgentProvider);
@@ -66,22 +66,22 @@ describe("auth functions", () => {
     });
 
     it("should handle HTTP error responses correctly", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
       const errorData = { message: "Unauthorized" };
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: false,
         status: 401,
-        json: jest.fn().mockResolvedValue(errorData),
+        json: vi.fn().mockResolvedValue(errorData),
       });
 
       await expect(getCurrentUserDetails(tokenProvider, connectionProvider, userAgentProvider)).rejects.toThrow("Error fetching user details: Unauthorized");
     });
 
     it("should handle network errors correctly", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
-      (global.fetch as jest.Mock).mockRejectedValue(new Error("Network error"));
+      (global.fetch as vi.Mock).mockRejectedValue(new Error("Network error"));
 
       await expect(getCurrentUserDetails(tokenProvider, connectionProvider, userAgentProvider)).rejects.toThrow("Network error");
     });
@@ -90,7 +90,7 @@ describe("auth functions", () => {
   describe("searchIdentities", () => {
     it("should search identities with correct parameters and return expected result", async () => {
       // Mock token provider
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
       // Mock fetch response
       const mockIdentities = {
@@ -108,9 +108,9 @@ describe("auth functions", () => {
         ],
       };
 
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(mockIdentities),
+        json: vi.fn().mockResolvedValue(mockIdentities),
       });
 
       const result = await searchIdentities("john.doe@example.com", tokenProvider, connectionProvider, userAgentProvider);
@@ -127,32 +127,32 @@ describe("auth functions", () => {
     });
 
     it("should handle HTTP error responses correctly", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
       // Mock failed HTTP response
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: false,
         status: 404,
-        text: jest.fn().mockResolvedValue("Not Found"),
+        text: vi.fn().mockResolvedValue("Not Found"),
       });
 
       await expect(searchIdentities("nonexistent@example.com", tokenProvider, connectionProvider, userAgentProvider)).rejects.toThrow("HTTP 404: Not Found");
     });
 
     it("should handle network errors correctly", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
-      (global.fetch as jest.Mock).mockRejectedValue(new Error("Network timeout"));
+      (global.fetch as vi.Mock).mockRejectedValue(new Error("Network timeout"));
 
       await expect(searchIdentities("test@example.com", tokenProvider, connectionProvider, userAgentProvider)).rejects.toThrow("Network timeout");
     });
 
     it("should properly encode search filter in URL", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue({ value: [] }),
+        json: vi.fn().mockResolvedValue({ value: [] }),
       });
 
       await searchIdentities("user with spaces@example.com", tokenProvider, connectionProvider, userAgentProvider);
@@ -167,7 +167,7 @@ describe("auth functions", () => {
   describe("getUserIdFromEmail", () => {
     it("should return user ID from email with correct parameters", async () => {
       // Mock token provider
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
       // Mock fetch response with single user
       const mockIdentities = {
@@ -180,9 +180,9 @@ describe("auth functions", () => {
         ],
       };
 
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(mockIdentities),
+        json: vi.fn().mockResolvedValue(mockIdentities),
       });
 
       const result = await getUserIdFromEmail("john.doe@example.com", tokenProvider, connectionProvider, userAgentProvider);
@@ -199,7 +199,7 @@ describe("auth functions", () => {
     });
 
     it("should return first user ID when multiple users found", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
       const mockIdentities = {
         value: [
@@ -216,9 +216,9 @@ describe("auth functions", () => {
         ],
       };
 
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(mockIdentities),
+        json: vi.fn().mockResolvedValue(mockIdentities),
       });
 
       const result = await getUserIdFromEmail("john.doe@example.com", tokenProvider, connectionProvider, userAgentProvider);
@@ -227,31 +227,31 @@ describe("auth functions", () => {
     });
 
     it("should throw error when no users found", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
       // Mock empty response
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue({ value: [] }),
+        json: vi.fn().mockResolvedValue({ value: [] }),
       });
 
       await expect(getUserIdFromEmail("nobody@example.com", tokenProvider, connectionProvider, userAgentProvider)).rejects.toThrow("No user found with email/unique name: nobody@example.com");
     });
 
     it("should throw error when null response", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
       // Mock null response
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(null),
+        json: vi.fn().mockResolvedValue(null),
       });
 
       await expect(getUserIdFromEmail("test@example.com", tokenProvider, connectionProvider, userAgentProvider)).rejects.toThrow("No user found with email/unique name: test@example.com");
     });
 
     it("should throw error when user has no ID", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
       // Mock response with user without ID
       const mockIdentities = {
@@ -264,9 +264,9 @@ describe("auth functions", () => {
         ],
       };
 
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(mockIdentities),
+        json: vi.fn().mockResolvedValue(mockIdentities),
       });
 
       await expect(getUserIdFromEmail("john.doe@example.com", tokenProvider, connectionProvider, userAgentProvider)).rejects.toThrow(
@@ -275,28 +275,28 @@ describe("auth functions", () => {
     });
 
     it("should handle HTTP error responses correctly", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
       // Mock failed HTTP response
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: false,
         status: 403,
-        text: jest.fn().mockResolvedValue("Forbidden"),
+        text: vi.fn().mockResolvedValue("Forbidden"),
       });
 
       await expect(getUserIdFromEmail("test@example.com", tokenProvider, connectionProvider, userAgentProvider)).rejects.toThrow("HTTP 403: Forbidden");
     });
 
     it("should handle network errors correctly", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
-      (global.fetch as jest.Mock).mockRejectedValue(new Error("Connection refused"));
+      (global.fetch as vi.Mock).mockRejectedValue(new Error("Connection refused"));
 
       await expect(getUserIdFromEmail("test@example.com", tokenProvider, connectionProvider, userAgentProvider)).rejects.toThrow("Connection refused");
     });
 
     it("should work with unique names as well as emails", async () => {
-      (tokenProvider as jest.Mock).mockResolvedValue("fake-token");
+      (tokenProvider as vi.Mock).mockResolvedValue("fake-token");
 
       const mockIdentities = {
         value: [
@@ -308,9 +308,9 @@ describe("auth functions", () => {
         ],
       };
 
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as vi.Mock).mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(mockIdentities),
+        json: vi.fn().mockResolvedValue(mockIdentities),
       });
 
       const result = await getUserIdFromEmail("john.doe", tokenProvider, connectionProvider, userAgentProvider);

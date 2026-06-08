@@ -1,23 +1,24 @@
+import { vi, type SpyInstance } from "vitest";
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 import { DomainsManager } from "../../src/shared/domains";
 import { logger } from "../../src/logger";
 
-jest.mock("../../src/logger.js", () => ({
+vi.mock("../../src/logger.js", () => ({
   logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
 describe("DomainsManager: backward compatibility and domain enabling", () => {
-  let errorSpy: jest.SpyInstance;
+  let errorSpy: SpyInstance;
 
   beforeEach(() => {
-    errorSpy = jest.spyOn(logger, "error").mockImplementation();
+    errorSpy = vi.spyOn(logger, "error").mockImplementation();
   });
 
   afterEach(() => {

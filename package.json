@@ -45,7 +45,7 @@
     "@azure/msal-node": "^5.2.3",
     "@modelcontextprotocol/sdk": "1.29.0",
     "azure-devops-extension-api": "^5.272.3",
-    "azure-devops-extension-sdk": "^4.2.0",
+    "azure-devops-extension-sdk": "^5.0.0",
     "azure-devops-node-api": "^15.1.2",
     "winston": "^3.19.0",
     "yargs": "^18.0.0",
